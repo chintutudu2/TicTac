@@ -1,11 +1,11 @@
 import {View, Text} from 'react-native';
 import React from 'react';
-import SelectSign from '../Screens/SelectSign/SelectSign';
+import Game from '../Screens/Game/Game';
 
 const App = () => {
   return (
     <View style={{flex: 1}}>
-      <SelectSign />
+      <Game />
     </View>
   );
 };
