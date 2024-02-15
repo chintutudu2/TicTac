@@ -4,11 +4,15 @@ import {
   ImageBackground,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 const Game = () => {
+  const [timer, setTimer] = useState(10);
+  const [isActive, setIsActive] = useState(false);
+  const [playerTurn, setPlayerTurn] = useState(0);
   const [grid, setGrid] = useState(
     Array.from({length: 9}).map((_, index) => ({
       key: String(index),
@@ -17,13 +21,16 @@ const Game = () => {
   );
 
   useEffect(() => {
-    setGrid(prev => {
-      let updatedGrid = [...prev];
-      updatedGrid[4].sign = 1;
-      updatedGrid[6].sign = 0;
-      return updatedGrid;
-    });
-  }, []);
+    let intervalId: string | number | NodeJS.Timeout | undefined;
+    if (isActive && timer > 0) {
+      intervalId = setInterval(() => {
+        setTimer(prevTime => prevTime - 1);
+      }, 1000);
+    }
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [isActive, timer]);
 
   function disableGridBorder(index: number) {
     let style: {[key: string]: number} = {};
@@ -42,8 +49,28 @@ const Game = () => {
     return style;
   }
 
+  function onPressedGrid(index: number) {
+    setGrid(prev => {
+      let updatedGrid = [...prev];
+      if (updatedGrid[index].sign === -1) {
+        if (playerTurn == 0) {
+          updatedGrid[index].sign = 0;
+          setPlayerTurn(1);
+        } else {
+          updatedGrid[index].sign = 1;
+          setPlayerTurn(0);
+        }
+        setTimer(10);
+        setIsActive(true);
+      }
+      return updatedGrid;
+    });
+  }
+
   const renderItem = ({item, index}: any) => (
-    <View style={[styles.cell, disableGridBorder(index)]}>
+    <TouchableOpacity
+      style={[styles.cell, disableGridBorder(index)]}
+      onPress={() => onPressedGrid(index)}>
       {item.sign == 0 && (
         <Image
           source={require('../../Assets/Images/circleSign.png')}
@@ -56,7 +83,7 @@ const Game = () => {
           style={styles.sign}
         />
       )}
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -64,9 +91,11 @@ const Game = () => {
       source={require('../../Assets/Images/GameBg.png')}
       style={styles.container}>
       <View style={styles.timer}>
-        <Text style={styles.timerText}>0:05</Text>
+        <Text style={styles.timerText}>{`0:${timer}`}</Text>
       </View>
-      <Text style={styles.heading}>Player X Turn</Text>
+      <Text style={styles.heading}>{`Player ${
+        playerTurn == 0 ? 'O' : 'X'
+      } Turn`}</Text>
       <View style={styles.board}>
         <FlatList
           data={grid}
