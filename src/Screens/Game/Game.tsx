@@ -1,18 +1,22 @@
 import {
+  Button,
   FlatList,
   Image,
   ImageBackground,
+  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
+import {gameWinner} from '../../utils/gameState';
 
 const Game = () => {
   const [timer, setTimer] = useState(10);
   const [isActive, setIsActive] = useState(false);
   const [playerTurn, setPlayerTurn] = useState(0);
+  const [isGameOver, setIsGameOver] = useState(false);
   const [grid, setGrid] = useState(
     Array.from({length: 9}).map((_, index) => ({
       key: String(index),
@@ -52,19 +56,38 @@ const Game = () => {
   function onPressedGrid(index: number) {
     setGrid(prev => {
       let updatedGrid = [...prev];
-      if (updatedGrid[index].sign === -1) {
+      if (updatedGrid[index].sign === -1 && gameWinner(updatedGrid) === -1) {
         if (playerTurn == 0) {
           updatedGrid[index].sign = 0;
-          setPlayerTurn(1);
         } else {
           updatedGrid[index].sign = 1;
-          setPlayerTurn(0);
         }
         setTimer(10);
         setIsActive(true);
       }
+      if (gameWinner(updatedGrid) != -1) {
+        setTimer(0);
+        setIsGameOver(true);
+      } else {
+        setPlayerTurn(prev => {
+          return prev == 0 ? 1 : 0;
+        });
+      }
       return updatedGrid;
     });
+  }
+
+  function restartGame() {
+    setIsGameOver(false);
+    setPlayerTurn(prev => {
+      return prev == 0 ? 1 : 0;
+    });
+    setGrid(
+      Array.from({length: 9}).map((_, index) => ({
+        key: String(index),
+        sign: -1,
+      })),
+    );
   }
 
   const renderItem = ({item, index}: any) => (
@@ -90,6 +113,22 @@ const Game = () => {
     <ImageBackground
       source={require('../../Assets/Images/GameBg.png')}
       style={styles.container}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isGameOver}
+        onRequestClose={restartGame}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalHeading}>{`Player ${
+              gameWinner(grid) == 0 ? 'O' : 'X'
+            } Wins !!!`}</Text>
+            <TouchableOpacity style={styles.button} onPress={restartGame}>
+              <Text style={styles.buttonText}>New Game</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       <View style={styles.timer}>
         <Text style={styles.timerText}>{`0:${timer}`}</Text>
       </View>
@@ -159,5 +198,43 @@ const styles = StyleSheet.create({
   sign: {
     width: 70,
     height: 70,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  modalCard: {
+    width: '70%',
+    backgroundColor: 'white',
+    borderRadius: 8,
+    paddingVertical: 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeading: {
+    fontSize: 24,
+    color: '#000000',
+    fontWeight: 'bold',
+  },
+  button: {
+    backgroundColor: '#3A7BD5',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    marginTop: 20,
+    borderRadius: 8,
+  },
+  buttonText: {
+    fontSize: 16,
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
 });
