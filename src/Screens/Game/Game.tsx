@@ -12,7 +12,7 @@ import {
 import React, {useEffect, useRef, useState} from 'react';
 import {gameWinner} from '../../utils/gameState';
 
-const Game = () => {
+const Game = ({navigation}: any) => {
   const [timer, setTimer] = useState(10);
   const [isActive, setIsActive] = useState(false);
   const [playerTurn, setPlayerTurn] = useState(0);
@@ -113,6 +113,13 @@ const Game = () => {
     <ImageBackground
       source={require('../../Assets/Images/GameBg.png')}
       style={styles.container}>
+      <TouchableOpacity
+        style={styles.back}
+        onPress={() => {
+          navigation.goBack();
+        }}>
+        <Image source={require('../../Assets/Images/back.png')} />
+      </TouchableOpacity>
       <Modal
         animationType="slide"
         transparent={true}
@@ -155,6 +162,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  back: {
+    position: 'absolute',
+    left: 16,
+    top: 16,
+    padding: 16,
   },
   timer: {
     width: 149,

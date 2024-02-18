@@ -1,5 +1,4 @@
 import {
-  Image,
   ImageBackground,
   StyleSheet,
   Text,
@@ -9,8 +8,13 @@ import {
 } from 'react-native';
 import React, {useState} from 'react';
 
-const EnterServerId = () => {
+const EnterServerId = ({navigation}: any) => {
   const [serverId, setServerId] = useState<number>();
+
+  const onPressCreateGame = () => {
+    navigation.navigate('Game');
+  };
+
   return (
     <ImageBackground
       source={require('../../Assets/Images/SelectSignBg.png')}
@@ -33,10 +37,10 @@ const EnterServerId = () => {
           />
         </View>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity style={styles.button} onPress={onPressCreateGame}>
             <Text style={styles.buttonText}>Create Game</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity style={styles.button} onPress={onPressCreateGame}>
             <Text style={styles.buttonText}>Join Game</Text>
           </TouchableOpacity>
         </View>
