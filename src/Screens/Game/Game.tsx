@@ -1,5 +1,4 @@
 import {
-  Button,
   FlatList,
   Image,
   ImageBackground,
@@ -9,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {gameWinner} from '../../utils/gameState';
 
 const Game = ({navigation}: any) => {
@@ -166,7 +165,7 @@ const styles = StyleSheet.create({
   back: {
     position: 'absolute',
     left: 16,
-    top: 16,
+    top: 48,
     padding: 16,
   },
   timer: {

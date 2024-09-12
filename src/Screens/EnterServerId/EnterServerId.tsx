@@ -15,6 +15,7 @@ const EnterServerId = ({navigation}: any) => {
   const [serverId, setServerId] = useState<number>();
 
   const onPressCreateGame = () => {
+    setServerId(undefined);
     navigation.navigate('Game');
   };
 
