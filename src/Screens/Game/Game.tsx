@@ -53,6 +53,7 @@ const Game = ({navigation}: any) => {
   }
 
   function onPressedGrid(index: number) {
+    let isGridChanged = false;
     setGrid(prev => {
       let updatedGrid = [...prev];
       if (updatedGrid[index].sign === -1 && gameWinner(updatedGrid) === -1) {
@@ -63,11 +64,12 @@ const Game = ({navigation}: any) => {
         }
         setTimer(10);
         setIsActive(true);
+        isGridChanged = true;
       }
       if (gameWinner(updatedGrid) != -1) {
         setTimer(0);
         setIsGameOver(true);
-      } else {
+      } else if (isGridChanged) {
         setPlayerTurn(prev => {
           return prev == 0 ? 1 : 0;
         });
