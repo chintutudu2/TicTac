@@ -1,9 +1,9 @@
 import {View} from 'react-native';
 import React from 'react';
-import EnterServerId from '../Screens/EnterServerId/EnterServerId';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Game from '../Screens/Game/Game';
+import EnterServerId from '../Screens/EnterServerId/EnterServerId';
 
 const Stack = createNativeStackNavigator();
 

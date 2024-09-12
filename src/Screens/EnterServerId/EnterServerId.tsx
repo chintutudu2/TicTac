@@ -1,9 +1,12 @@
 import {
   ImageBackground,
+  Keyboard,
+  KeyboardAvoidingView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import React, {useState} from 'react';
@@ -19,32 +22,44 @@ const EnterServerId = ({navigation}: any) => {
     <ImageBackground
       source={require('../../Assets/Images/SelectSignBg.png')}
       style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.heading}>TIC-TAC-TOE</Text>
-      </View>
-      <View style={styles.footer}>
-        <Text style={styles.subHeading}>Server ID</Text>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            onChangeText={num => {
-              setServerId(parseInt(num));
-            }}
-            value={serverId?.toString()}
-            placeholder="Enter server ID"
-            placeholderTextColor={'#ffffff'}
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={onPressCreateGame}>
-            <Text style={styles.buttonText}>Create Game</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={onPressCreateGame}>
-            <Text style={styles.buttonText}>Join Game</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior="padding">
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.innerContainer}>
+            <View style={styles.headerContainer}>
+              <Text style={styles.heading}>TIC-TAC-TOE</Text>
+            </View>
+            <View style={styles.footer}>
+              <Text style={styles.subHeading}>Server ID</Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  onChangeText={num => {
+                    setServerId(parseInt(num));
+                  }}
+                  value={serverId?.toString()}
+                  placeholder="Enter server ID"
+                  placeholderTextColor={'#ffffff'}
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={onPressCreateGame}>
+                  <Text style={styles.buttonText}>Create Game</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={onPressCreateGame}>
+                  <Text style={styles.buttonText}>Join Game</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 };
@@ -53,6 +68,12 @@ export default EnterServerId;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  innerContainer: {
     flex: 1,
     alignItems: 'center',
     paddingHorizontal: 32,
@@ -86,7 +107,7 @@ const styles = StyleSheet.create({
     borderColor: '#ffffff',
     borderWidth: 1,
     borderRadius: 8,
-    padding: 20,
+    paddingHorizontal: 20,
     color: '#ffffff',
   },
   buttonContainer: {
