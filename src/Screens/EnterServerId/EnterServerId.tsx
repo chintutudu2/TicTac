@@ -10,13 +10,42 @@ import {
   View,
 } from 'react-native';
 import React, {useState} from 'react';
+import firestore from '@react-native-firebase/firestore';
 
 const EnterServerId = ({navigation}: any) => {
   const [serverId, setServerId] = useState<number>();
 
   const onPressCreateGame = () => {
-    setServerId(undefined);
-    navigation.navigate('Game');
+    let randomNumber = Math.floor(Math.random() * 9000 + 1000);
+    let grid = Array.from({length: 9}).map((_, index) => ({
+      key: String(index),
+      sign: -1,
+    }));
+
+    firestore()
+      .collection('serverId')
+      .doc(randomNumber.toString())
+      .set({
+        grid: grid,
+      })
+      .then(() => {
+        navigation.navigate('Game', {serverId: randomNumber});
+      });
+  };
+
+  const onPressJoinGame = async () => {
+    const server = await firestore()
+      .collection('serverId')
+      .doc(serverId?.toString())
+      .get();
+    if (
+      serverId != undefined &&
+      serverId > 1000 &&
+      server.data() != undefined
+    ) {
+      navigation.navigate('Game', {serverId});
+      setServerId(undefined);
+    }
   };
 
   return (
@@ -37,12 +66,17 @@ const EnterServerId = ({navigation}: any) => {
                 <TextInput
                   style={styles.input}
                   onChangeText={num => {
-                    setServerId(parseInt(num));
+                    if (num.length == 0) {
+                      setServerId(undefined);
+                    } else {
+                      setServerId(parseInt(num));
+                    }
                   }}
                   value={serverId?.toString()}
                   placeholder="Enter server ID"
                   placeholderTextColor={'#ffffff'}
                   keyboardType="numeric"
+                  maxLength={4}
                 />
               </View>
               <View style={styles.buttonContainer}>
@@ -53,7 +87,7 @@ const EnterServerId = ({navigation}: any) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.button}
-                  onPress={onPressCreateGame}>
+                  onPress={onPressJoinGame}>
                   <Text style={styles.buttonText}>Join Game</Text>
                 </TouchableOpacity>
               </View>
