@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import {gameWinner} from '../../utils/gameState';
+import {gameWinner, numberOfFilledCellInGrid} from '../../utils/gameState';
 import firestore from '@react-native-firebase/firestore';
 
 const Game = ({route, navigation}: any) => {
@@ -88,7 +88,10 @@ const Game = ({route, navigation}: any) => {
       isGridChanged = true;
     }
 
-    if (gameWinner(updatedGrid) != -1) {
+    if (
+      gameWinner(updatedGrid) != -1 ||
+      numberOfFilledCellInGrid(updatedGrid) === 9
+    ) {
       updatedIsGameOver = true;
     } else if (isGridChanged) {
       updatedPlayerTurn = updatedPlayerTurn === 0 ? 1 : 0;
@@ -144,9 +147,13 @@ const Game = ({route, navigation}: any) => {
         onRequestClose={restartGame}>
         <View style={styles.modalContainer}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalHeading}>{`Player ${
-              gameWinner(grid) == 0 ? 'O' : 'X'
-            } Wins !!!`}</Text>
+            {gameWinner(grid) === -1 && numberOfFilledCellInGrid(grid) === 9 ? (
+              <Text style={styles.modalHeading}>{`Match Draw`}</Text>
+            ) : (
+              <Text style={styles.modalHeading}>{`Player ${
+                gameWinner(grid) == 0 ? 'O' : 'X'
+              } Wins !!!`}</Text>
+            )}
             <TouchableOpacity style={styles.button} onPress={restartGame}>
               <Text style={styles.buttonText}>New Game</Text>
             </TouchableOpacity>
