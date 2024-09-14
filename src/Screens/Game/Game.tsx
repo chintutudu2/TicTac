@@ -10,10 +10,10 @@ import {
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {gameWinner} from '../../utils/gameState';
+import firestore from '@react-native-firebase/firestore';
 
-const Game = ({navigation}: any) => {
-  const [timer, setTimer] = useState(10);
-  const [isActive, setIsActive] = useState(false);
+const Game = ({route, navigation}: any) => {
+  const {serverId, currentPlayer} = route.params;
   const [playerTurn, setPlayerTurn] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
   const [grid, setGrid] = useState(
@@ -24,16 +24,20 @@ const Game = ({navigation}: any) => {
   );
 
   useEffect(() => {
-    let intervalId: string | number | NodeJS.Timeout | undefined;
-    if (isActive && timer > 0) {
-      intervalId = setInterval(() => {
-        setTimer(prevTime => prevTime - 1);
-      }, 1000);
-    }
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [isActive, timer]);
+    const subscriber = firestore()
+      .collection('serverId')
+      .doc(serverId.toString())
+      .onSnapshot(documentSnapshot => {
+        let dataFromFirebase = documentSnapshot.data();
+        if (dataFromFirebase != undefined) {
+          setGrid(dataFromFirebase.grid);
+          setIsGameOver(dataFromFirebase.isGameOver);
+          setPlayerTurn(dataFromFirebase.playerTurn);
+        }
+      });
+
+    return () => subscriber();
+  }, [isGameOver]);
 
   function disableGridBorder(index: number) {
     let style: {[key: string]: number} = {};
@@ -52,43 +56,55 @@ const Game = ({navigation}: any) => {
     return style;
   }
 
+  function updateFirebase(grid: any, playerTurn: number, isGameOver: boolean) {
+    firestore()
+      .collection('serverId')
+      .doc(serverId.toString())
+      .update({
+        grid: grid,
+        playerTurn: playerTurn,
+        isGameOver: isGameOver,
+      })
+      .then(() => {
+        console.log('Firebase Players Move updated');
+      });
+  }
+
   function onPressedGrid(index: number) {
+    if (currentPlayer != playerTurn) {
+      return;
+    }
     let isGridChanged = false;
-    setGrid(prev => {
-      let updatedGrid = [...prev];
-      if (updatedGrid[index].sign === -1 && gameWinner(updatedGrid) === -1) {
-        if (playerTurn == 0) {
-          updatedGrid[index].sign = 0;
-        } else {
-          updatedGrid[index].sign = 1;
-        }
-        setTimer(10);
-        setIsActive(true);
-        isGridChanged = true;
+    let updatedGrid = [...grid];
+    let updatedPlayerTurn = playerTurn;
+    let updatedIsGameOver = isGameOver;
+
+    if (updatedGrid[index].sign === -1) {
+      if (updatedPlayerTurn == 0) {
+        updatedGrid[index].sign = 0;
+      } else {
+        updatedGrid[index].sign = 1;
       }
-      if (gameWinner(updatedGrid) != -1) {
-        setTimer(0);
-        setIsGameOver(true);
-      } else if (isGridChanged) {
-        setPlayerTurn(prev => {
-          return prev == 0 ? 1 : 0;
-        });
-      }
-      return updatedGrid;
-    });
+      isGridChanged = true;
+    }
+
+    if (gameWinner(updatedGrid) != -1) {
+      updatedIsGameOver = true;
+    } else if (isGridChanged) {
+      updatedPlayerTurn = updatedPlayerTurn === 0 ? 1 : 0;
+    }
+
+    updateFirebase(updatedGrid, updatedPlayerTurn, updatedIsGameOver);
   }
 
   function restartGame() {
-    setIsGameOver(false);
-    setPlayerTurn(prev => {
-      return prev == 0 ? 1 : 0;
-    });
-    setGrid(
-      Array.from({length: 9}).map((_, index) => ({
-        key: String(index),
-        sign: -1,
-      })),
-    );
+    let newGrid = Array.from({length: 9}).map((_, index) => ({
+      key: String(index),
+      sign: -1,
+    }));
+    let newPlayerTurn = playerTurn === 0 ? 1 : 0;
+
+    updateFirebase(newGrid, newPlayerTurn, false);
   }
 
   const renderItem = ({item, index}: any) => (
@@ -137,8 +153,8 @@ const Game = ({navigation}: any) => {
           </View>
         </View>
       </Modal>
-      <View style={styles.timer}>
-        <Text style={styles.timerText}>{`0:${timer}`}</Text>
+      <View style={styles.serverId}>
+        <Text style={styles.serverIdText}>{serverId}</Text>
       </View>
       <Text style={styles.heading}>{`Player ${
         playerTurn == 0 ? 'O' : 'X'
@@ -170,7 +186,7 @@ const styles = StyleSheet.create({
     top: 48,
     padding: 16,
   },
-  timer: {
+  serverId: {
     width: 149,
     height: 55,
     borderRadius: 100,
@@ -178,7 +194,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  timerText: {
+  serverIdText: {
     fontSize: 34,
     color: '#000000',
   },
