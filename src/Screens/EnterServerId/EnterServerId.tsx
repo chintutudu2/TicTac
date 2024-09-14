@@ -27,9 +27,11 @@ const EnterServerId = ({navigation}: any) => {
       .doc(randomNumber.toString())
       .set({
         grid: grid,
+        playerTurn: 0,
+        isGameOver: false,
       })
       .then(() => {
-        navigation.navigate('Game', {serverId: randomNumber});
+        navigation.navigate('Game', {serverId: randomNumber, currentPlayer: 0});
       });
   };
 
@@ -43,7 +45,7 @@ const EnterServerId = ({navigation}: any) => {
       serverId > 1000 &&
       server.data() != undefined
     ) {
-      navigation.navigate('Game', {serverId});
+      navigation.navigate('Game', {serverId: serverId, currentPlayer: 1});
       setServerId(undefined);
     }
   };
